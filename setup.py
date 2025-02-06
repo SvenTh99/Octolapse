@@ -1,12 +1,14 @@
 # coding=utf-8
+# changed distutils reference, not supported with python3.13
 from setuptools import setup, Extension
-from distutils.command.build_ext import build_ext
-from distutils.ccompiler import CCompiler
-from distutils.unixccompiler import UnixCCompiler
-from distutils.msvccompiler import MSVCCompiler
-from distutils.bcppcompiler import BCPPCompiler
-from distutils.cygwinccompiler import CygwinCCompiler
-from distutils.version import LooseVersion
+from setuptools.command.build_ext import build_ext
+from setuptools._distutils.ccompiler import CCompiler
+from setuptools._distutils.unixccompiler import UnixCCompiler
+from setuptools._distutils.msvccompiler import MSVCCompiler
+from setuptools._distutils.bcppcompiler import BCPPCompiler
+from setuptools._distutils.cygwinccompiler import CygwinCCompiler
+from setuptools._distutils.version import LooseVersion
+
 from octoprint_octolapse_setuptools import NumberedVersion
 import sys
 import versioneer
