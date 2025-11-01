@@ -22,7 +22,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Package plugin
-        run: cd octoprint_octolapse && zip -r ../octoprint_octolapse-${{ github.ref_name }}.zip ./*
+        run: zip -r octoprint_octolapse-${{ github.ref_name }}.zip . -x "*.git*"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
