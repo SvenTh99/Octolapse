@@ -1,9 +1,11 @@
-name: Build and upload release
+name: Build and attach release asset
 
 on:
   push:
     tags:
-      - 'v*'  # z. B. v1.0.0, v2.3.1
+      - 'v*'
+  release:
+    types: [published]
 
 jobs:
   release:
@@ -13,19 +15,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Wichtig für git describe
+          fetch-depth: 0
 
-      - name: Get release tag
-        id: get_tag
-        run: echo "tag=$(git describe --tags)" >> $GITHUB_OUTPUT
+      - name: Get tag name
+        id: tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Package plugin directory
-        run: zip -r "octoprint_octolapse-${{ steps.get_tag.outputs.tag }}.zip" octoprint_octolapse/
-
+      - name: Package plugin
+        run: zip -r "octoprint_octolapse-${{ steps.tag.outputs.tag }}.zip" octoprint_octolapse/
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: "octoprint_octolapse-${{ steps.get_tag.outputs.tag }}.zip"
+          tag_name: ${{ steps.tag.outputs.tag }}
+          files: "octoprint_octolapse-${{ steps.tag.outputs.tag }}.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
