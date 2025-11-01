@@ -3,22 +3,26 @@ name: Build and upload release
 on:
   push:
 
-
 jobs:
-  build-release:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Wichtig für git describe
 
+      - name: Get release tag
+        id: get_tag
+        run: echo "tag=$(git describe --tags)" >> $GITHUB_OUTPUT
 
+      - name: Package plugin directory
+        run: zip -r "octoprint_octolapse-${{ steps.get_tag.outputs.tag }}.zip" octoprint_octolapse/
 
-      - name: Package release
-        run: zip -r "octoprint_octolapse-$(git describe --tags).zip" octoprint_octolapse/
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: Octolapse.zip
+          files: "octoprint_octolapse-${{ steps.get_tag.outputs.tag }}.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
