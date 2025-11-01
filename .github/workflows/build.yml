@@ -16,7 +16,7 @@ jobs:
 
       - name: Package release
         run: |
-          zip octoprint_octolapse/ -r latest.zip builds/
+zip -r "octoprint_octolapse-$(git describe --tags).zip" octoprint_octolapse/
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
