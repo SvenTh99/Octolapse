@@ -16,7 +16,7 @@ jobs:
 
       - name: Package release
         run: |
-          zip -r Octolapse.zip Octolapse/
+          zip -r Octolapse.zip builds/
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
