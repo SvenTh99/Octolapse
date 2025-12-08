@@ -2,157 +2,129 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
-import platform
+import versioneer
+import configparser  # Ändere hier den Import
 
-# Versioneer import with fallback
-try:
-    import versioneer
-    cmdclass = versioneer.get_cmdclass()
-except (ImportError, AttributeError):
-    print("Warning: versioneer not available, using fallback version")
-    cmdclass = {}
-    def get_version():
-        return "0.4.5+unknown"
-    def get_cmdclass():
-        return {}
-    class _versioneer:
-        get_version = staticmethod(get_version)
-        get_cmdclass = staticmethod(get_cmdclass)
-    versioneer = _versioneer
+########################################################################################################################
+# The plugin's identifier, has to be unique
+plugin_identifier = "octolapse"
+plugin_package = "octoprint_octolapse"
+plugin_name = "Octolapse"
+fallback_version = "1.0.0"
+plugin_version = versioneer.get_versions()["version"]
 
-# Compiler options
+plugin_cmdclass = versioneer.get_cmdclass()
+plugin_description = """Create stabilized timelapses of your 3d prints. Highly customizable, loads of presets, lots of fun."""
+plugin_author = "Brad Hochgesang"
+plugin_author_email = "FormerLurker@pm.me"
+plugin_url = "https://github.com/FormerLurker/Octolapse"
+plugin_license = "AGPLv3"
+plugin_requires = ["pillow>=9.3,<11", "sarge", "six", "OctoPrint>=1.4.0", "psutil", "file_read_backwards", "setuptools>=6.0", "awesome-slugify>=1.6.5,<1.7"]
+
+# --------------------------------------------------------------------------------------------------------------------
+# More advanced options that you usually shouldn't have to touch follow after this point
+
+plugin_additional_data = [
+    'data/*.json',
+    'data/images/*.png',
+    'data/images/*.jpeg',
+    'data/lib/c/*.cpp',
+    'data/lib/c/*.h',
+    'data/webcam_types/*',
+    'data/fonts/*'
+]
+plugin_additional_packages = ['octoprint_octolapse_setuptools']
+plugin_ignored_packages = []
+
+# C++ Extension compiler options
+DEBUG = False
 compiler_opts = {
-    'extra_compile_args': [],
+    'extra_compile_args': ['-O3', '-std=c++11'],
     'extra_link_args': [],
-    'define_macros': [('DEBUG_chardet', '1'), ('IS_PYTHON_EXTENSION', '1')]
+    'define_macros': [('IS_PYTHON_EXTENSION', '1')]
 }
 
-# Platform-specific compiler flags
-if sys.platform == 'win32':
-    compiler_opts['extra_compile_args'].extend(['/std:c++14', '/permissive-'])
-elif sys.platform == 'darwin':
-    compiler_opts['extra_compile_args'].extend(['-std=c++14', '-mmacosx-version-min=10.9'])
-else:
-    compiler_opts['extra_compile_args'].append('-std=c++14')
+if DEBUG:
+    compiler_opts = {
+        'extra_compile_args': [],
+        'extra_link_args': [],
+        'define_macros': [('DEBUG_chardet', '1'), ('IS_PYTHON_EXTENSION', '1')]
+    }
 
 class build_ext_subclass(build_ext):
     def build_extensions(self):
-        # Detect compiler type
-        compiler_type = self.compiler.compiler_type if hasattr(self.compiler, 'compiler_type') else 'unix'
-        
-        print(f"Compiling Octolapse Parser Extension with {compiler_type}.")
+        print("Compiling Octolapse Parser Extension with {0}.".format(self.compiler))
 
         for ext in self.extensions:
             ext.extra_compile_args.extend(compiler_opts['extra_compile_args'])
             ext.extra_link_args.extend(compiler_opts['extra_link_args'])
             ext.define_macros.extend(compiler_opts['define_macros'])
-        
         build_ext.build_extensions(self)
 
-# Update cmdclass with our custom build_ext
-cmdclass['build_ext'] = build_ext_subclass
+        for extension in self.extensions:
+            print(f"Build Extensions for {extension.name} - extra_compile_args: {extension.extra_compile_args} - extra_link_args: {extension.extra_link_args} - define_macros: {extension.define_macros}")
 
-def package_data_dirs(source, sub_folders):
-    dirs = [source]
-    for folder in sub_folders:
-        dirs.append(source + '/' + folder)
-    
-    ret = []
-    for d in dirs:
-        for dirname, _, files in os.walk(d):
-            for filename in files:
-                filepath = os.path.join(dirname, filename)
-                ret.append(filepath[len(source)+1:])
-    return ret
-
-def get_requirements(requirements_path):
-    requirements = []
-    with open(requirements_path, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                requirements.append(line)
-    return requirements
-
-import os
-requirements = get_requirements('requirements.txt')
-
-setup(
-    name="Octolapse",
-    version=versioneer.get_version(),
-    cmdclass=cmdclass,
-    description="Create a stabilized timelapse of your 3D prints.",
-    long_description="Octolapse is designed to make stabilized timelapses of your prints with as little hassle as possible, and it's extremely configurable.",
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: GNU Affero General Public License v3',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
-        'Topic :: System :: Monitoring'
-    ],
-    author="Brad Hochgesang",
-    author_email="FormerLurker@pm.me",
-    url="https://github.com/FormerLurker/Octolapse/",
-    license="GNU Affero General Public License v3",
-    packages=["octoprint_octolapse",
-              "octoprint_octolapse.stabilization_gcode",
-              "octoprint_octolapse_setuptools"],
-    package_data={
-        "octoprint_octolapse": package_data_dirs(
-            'octoprint_octolapse',
-            ['data', 'static', 'templates']
-        )
-    },
-    include_package_data=True,
-    zip_safe=False,
-    install_requires=requirements,
-    extras_require={
-        'develop': [
-            'mock>=2.0.0',
-        ]
-    },
-    entry_points={
-        "octoprint.plugin": [
-            "octolapse = octoprint_octolapse"
-        ]
-    },
-    ext_modules=[
-        Extension(
-            'octoprint_octolapse.gcode_parser',
-            sources=[
-                'octoprint_octolapse/gcode_parser.cpp',
-                'octoprint_octolapse/extruder.cpp',
-                'octoprint_octolapse/position.cpp',
-                'octoprint_octolapse/stabilization.cpp',
-                'octoprint_octolapse/stabilization_smart_layer.cpp',
-                'octoprint_octolapse/stabilization_smart_gcode.cpp',
-                'octoprint_octolapse/trigger_position.cpp',
-                'octoprint_octolapse/snapshot_plan.cpp',
-                'octoprint_octolapse/snapshot_plan_step.cpp',
-                'octoprint_octolapse/parsed_command.cpp',
-                'octoprint_octolapse/parsed_command_parameter.cpp',
-                'octoprint_octolapse/gcode_comment_processor.cpp',
-                'octoprint_octolapse/gcode_position_processor.cpp',
-                'octoprint_octolapse/position_args.cpp',
-                'octoprint_octolapse/gcode_position_args.cpp',
-                'octoprint_octolapse/parsed_command_args.cpp',
-                'octoprint_octolapse/gcode_processor_args.cpp',
-                'octoprint_octolapse/stabilization_args.cpp',
-                'octoprint_octolapse/trigger_position_args.cpp',
-                'octoprint_octolapse/snapshot_plan_args.cpp',
-                'octoprint_octolapse/python_helpers.cpp',
-                'octoprint_octolapse/logging.cpp',
-                'octoprint_octolapse/utilities.cpp',
-                'octoprint_octolapse/extruder_args.cpp',
-                'octoprint_octolapse/py_logger.cpp'
-            ],
-            language='c++',
-        )
-    ]
+# Define the C++ Extension
+plugin_ext_sources = [
+    'octoprint_octolapse/data/lib/c/gcode_position_processor.cpp',
+    'octoprint_octolapse/data/lib/c/gcode_parser.cpp',
+    'octoprint_octolapse/data/lib/c/gcode_position.cpp',
+    'octoprint_octolapse/data/lib/c/parsed_command.cpp',
+    'octoprint_octolapse/data/lib/c/parsed_command_parameter.cpp',
+    'octoprint_octolapse/data/lib/c/position.cpp',
+    'octoprint_octolapse/data/lib/c/python_helpers.cpp',
+    'octoprint_octolapse/data/lib/c/snapshot_plan.cpp',
+    'octoprint_octolapse/data/lib/c/snapshot_plan_step.cpp',
+    'octoprint_octolapse/data/lib/c/stabilization.cpp',
+    'octoprint_octolapse/data/lib/c/stabilization_results.cpp',
+    'octoprint_octolapse/data/lib/c/stabilization_smart_layer.cpp',
+    'octoprint_octolapse/data/lib/c/stabilization_smart_gcode.cpp',
+    'octoprint_octolapse/data/lib/c/logging.cpp',
+    'octoprint_octolapse/data/lib/c/utilities.cpp',
+    'octoprint_octolapse/data/lib/c/trigger_position.cpp',
+    'octoprint_octolapse/data/lib/c/gcode_comment_processor.cpp',
+    'octoprint_octolapse/data/lib/c/extruder.cpp'
+]
+cpp_gcode_parser = Extension(
+    'GcodePositionProcessor',
+    sources=plugin_ext_sources,
+    language="c++"
 )
+
+additional_setup_parameters = {
+    "ext_modules": [cpp_gcode_parser],
+    "cmdclass": {"build_ext": build_ext_subclass}
+}
+
+# Ensure OctoPrint's setuptools is available
+try:
+    import octoprint_setuptools
+except ImportError:
+    print("Could not import OctoPrint's setuptools, are you sure you are running under the correct Python environment?")
+    sys.exit(-1)
+
+# Generate the setup parameters
+setup_parameters = octoprint_setuptools.create_plugin_setup_parameters(
+    identifier=plugin_identifier,
+    package=plugin_package,
+    name=plugin_name,
+    version=plugin_version,
+    description=plugin_description,
+    author=plugin_author,
+    mail=plugin_author_email,
+    url=plugin_url,
+    license=plugin_license,
+    requires=plugin_requires,
+    additional_packages=plugin_additional_packages,
+    ignored_packages=plugin_ignored_packages,
+    additional_data=plugin_additional_data,
+    cmdclass=plugin_cmdclass
+)
+
+# Merge additional setup parameters
+if len(additional_setup_parameters):
+    from octoprint.util import dict_merge
+    setup_parameters = dict_merge(setup_parameters, additional_setup_parameters)
+
+# Run the setup function
+setup(**setup_parameters)
