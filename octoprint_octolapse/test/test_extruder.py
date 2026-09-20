@@ -49,7 +49,7 @@ class TestExtruder(unittest.TestCase):
     def test_ResetInitialState(self):
         """Test the initial extruder state, change all values, reset and check again"""
         # Check the initial state
-        self.assertEquals(len(self.Extruder.StateHistory), 1)
+        self.assertEqual(len(self.Extruder.StateHistory), 1)
 
         # add some states
         state1 = ExtruderState()
@@ -62,22 +62,22 @@ class TestExtruder(unittest.TestCase):
         self.Extruder.add_state(state3)
 
         # check the length of StateHistory
-        self.assertEquals(len(self.Extruder.StateHistory), 4)
+        self.assertEqual(len(self.Extruder.StateHistory), 4)
 
         # reset the state and check again
         self.Extruder.reset()
-        self.assertEquals(len(self.Extruder.StateHistory), 0)
+        self.assertEqual(len(self.Extruder.StateHistory), 0)
 
     def test_ExtruderState_InitialValues(self):
         # create a new state
         state = ExtruderState()
 
         # verify the initial values
-        self.assertEquals(state.E, 0)
-        self.assertEquals(state.extrusion_length, 0.0)
-        self.assertEquals(state.extruder_length_total, 0.0)
-        self.assertEquals(state.retraction_length, 0.0)
-        self.assertEquals(state.deretraction_length, 0.0)
+        self.assertEqual(state.E, 0)
+        self.assertEqual(state.extrusion_length, 0.0)
+        self.assertEqual(state.extruder_length_total, 0.0)
+        self.assertEqual(state.retraction_length, 0.0)
+        self.assertEqual(state.deretraction_length, 0.0)
         self.assertFalse(state.is_extruding_start)
         self.assertFalse(state.is_extruding)
         self.assertFalse(state.is_primed)
@@ -115,11 +115,11 @@ class TestExtruder(unittest.TestCase):
         # copy to a new state
         new_state = ExtruderState(state)
         # verify the state was copied correctly
-        self.assertEquals(new_state.E, 1)
-        self.assertEquals(new_state.extrusion_length, 100)
-        self.assertEquals(new_state.extruder_length_total, 200)
-        self.assertEquals(new_state.retraction_length, 300)
-        self.assertEquals(new_state.deretraction_length, 400)
+        self.assertEqual(new_state.E, 1)
+        self.assertEqual(new_state.extrusion_length, 100)
+        self.assertEqual(new_state.extruder_length_total, 200)
+        self.assertEqual(new_state.retraction_length, 300)
+        self.assertEqual(new_state.deretraction_length, 400)
         self.assertTrue(new_state.is_extruding_start)
         self.assertTrue(new_state.is_extruding)
         self.assertTrue(new_state.is_primed)

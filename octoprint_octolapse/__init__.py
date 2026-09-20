@@ -52,7 +52,7 @@ import time
 # from six.moves import queue
 import queue as queue
 from tempfile import mkdtemp
-from distutils.version import LooseVersion
+from octoprint_octolapse_setuptools import LooseVersion
 from io import BytesIO
 import octoprint.plugin
 import octoprint.filemanager

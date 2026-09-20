@@ -46,7 +46,7 @@ class OctoprintTestPrinter(object):
         return self.IsPaused
 
     def commands(self, commands):
-        if (isinstance(commands, basestring)):
+        if (isinstance(commands, str)):
             self.GcodeCommands.append(commands)
         elif (isinstance(commands, list)):
             self.GcodeCommands.extend(commands)

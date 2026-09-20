@@ -76,12 +76,12 @@ class OctolapseFormatter(logging.Formatter):
         return s
 
 
-class OctolapseConsoleHandler(logging.StreamHandler, AsyncLogHandlerMixin):
+class OctolapseConsoleHandler(AsyncLogHandlerMixin, logging.StreamHandler):
     def __init__(self, *args, **kwargs):
         super(OctolapseConsoleHandler, self).__init__(*args, **kwargs)
 
 
-class OctolapseFileHandler(CleaningTimedRotatingFileHandler, AsyncLogHandlerMixin):
+class OctolapseFileHandler(AsyncLogHandlerMixin, CleaningTimedRotatingFileHandler):
     def __init__(self, *args, **kwargs):
         super(OctolapseFileHandler, self).__init__(*args, **kwargs)
 
@@ -182,8 +182,8 @@ class LoggingConfigurator(metaclass=Singleton):
         if log_file_path is not None:
             # ensure that the logging path and file exist
             directory = os.path.dirname(log_file_path)
-            import distutils.dir_util
-            distutils.dir_util.mkpath(directory)
+            if directory:
+                os.makedirs(directory, exist_ok=True)
             if not os.path.isfile(log_file_path):
                 open(log_file_path, 'w').close()
 

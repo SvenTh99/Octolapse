@@ -3,7 +3,6 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
 import versioneer
-import configparser  # Ändere hier den Import
 
 ########################################################################################################################
 # The plugin's identifier, has to be unique
@@ -19,7 +18,7 @@ plugin_author = "Brad Hochgesang"
 plugin_author_email = "FormerLurker@pm.me"
 plugin_url = "https://github.com/FormerLurker/Octolapse"
 plugin_license = "AGPLv3"
-plugin_requires = ["pillow>=9.3,<11", "sarge", "six", "OctoPrint>=1.4.0", "psutil", "file_read_backwards", "setuptools>=6.0", "awesome-slugify>=1.6.5,<1.7"]
+plugin_requires = ["pillow>=9.3", "sarge", "OctoPrint>=1.4.0", "psutil", "file_read_backwards", "setuptools>=6.0", "awesome-slugify>=1.6.5,<1.7"]
 
 # --------------------------------------------------------------------------------------------------------------------
 # More advanced options that you usually shouldn't have to touch follow after this point

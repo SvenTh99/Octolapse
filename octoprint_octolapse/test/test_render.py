@@ -27,7 +27,7 @@ import re
 import subprocess
 import unittest
 import uuid
-from Queue import Queue
+from queue import Queue
 from csv import DictWriter
 from random import randint
 from shutil import rmtree
@@ -40,7 +40,7 @@ try:
 except ImportError:
     from PIL import Image
 
-from mock import Mock
+from unittest.mock import Mock
 
 from octoprint_octolapse.render import TimelapseRenderJob, Render, Rendering
 from octoprint_octolapse.settings import OctolapseSettings
@@ -138,7 +138,7 @@ class TestRender(unittest.TestCase):
                          "Incorrect amount of output files detected! Found {}. Expected only timelapse output.".format(
                              output_files))
         output_filename = output_files[0]
-        self.assertRegexpMatches(output_filename, re.compile('.*\.{}$'.format(extension), re.IGNORECASE))
+        self.assertRegex(output_filename, re.compile(r'.*\.{}$'.format(extension), re.IGNORECASE))
         output_filepath = os.path.join(self.octoprint_timelapse_folder, output_filename)
         self.assertGreater(os.path.getsize(output_filepath), 0)
         # Check the codec using ffprobe to make sure it matches what we expect.
@@ -186,7 +186,7 @@ class TestRender(unittest.TestCase):
                          "Incorrect amount of output files detected! Found {}. Expected only timelapse output.".format(
                              output_files))
         output_filename = output_files[0]
-        self.assertRegexpMatches(output_filename, re.compile('.*\.mp4$', re.IGNORECASE))
+        self.assertRegex(output_filename, re.compile(r'.*\.mp4$', re.IGNORECASE))
         self.assertGreater(os.path.getsize(os.path.join(self.octoprint_timelapse_folder, output_filename)), 0)
 
     def test_noMetadata(self):
@@ -207,7 +207,7 @@ class TestRender(unittest.TestCase):
                          "Incorrect amount of output files detected! Found {}. Expected only timelapse output.".format(
                              output_files))
         output_filename = output_files[0]
-        self.assertRegexpMatches(output_filename, re.compile('.*\.mp4$', re.IGNORECASE))
+        self.assertRegex(output_filename, re.compile(r'.*\.mp4$', re.IGNORECASE))
         self.assertGreater(os.path.getsize(os.path.join(self.octoprint_timelapse_folder, output_filename)), 0)
 
     def test_noffmpeg(self):
@@ -247,7 +247,7 @@ class TestRender(unittest.TestCase):
                          "Incorrect amount of output files detected! Found {}. Expected only timelapse output.".format(
                              output_files))
         output_filename = output_files[0]
-        self.assertRegexpMatches(output_filename, re.compile('.*\.mp4$', re.IGNORECASE))
+        self.assertRegex(output_filename, re.compile(r'.*\.mp4$', re.IGNORECASE))
         self.assertGreater(os.path.getsize(os.path.join(self.octoprint_timelapse_folder, output_filename)), 0)
 
     # True parameterized testing in unittest seems pretty complicated.
@@ -301,7 +301,7 @@ class TestRender(unittest.TestCase):
                          "Incorrect amount of output files detected! Found {}. Expected only timelapse output.".format(
                              output_files))
         output_filename = output_files[0]
-        self.assertRegexpMatches(output_filename, re.compile('.*\.mp4$', re.IGNORECASE))
+        self.assertRegex(output_filename, re.compile(r'.*\.mp4$', re.IGNORECASE))
         output_filepath = os.path.join(self.octoprint_timelapse_folder, output_filename)
         self.assertGreater(os.path.getsize(output_filepath), 0)
 

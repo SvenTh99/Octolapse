@@ -288,7 +288,8 @@ def preview_overlay(rendering_profile, image=None):
         text_image = Image.new('RGBA', i.size, (255, 255, 255, 0))
         d = ImageDraw.Draw(text_image)
         iw, ih = i.size
-        tw, th = d.textsize(t, font=font)
+        # ImageDraw.textsize was removed in Pillow 10; textbbox is available since Pillow 8.0
+        _, _, tw, th = d.textbbox((0, 0), t, font=font)
 
         d.text(xy=(iw / 2 - tw / 2 + dx, ih / 2 - th / 2 + dy), text=t,
                fill=tuple(overlay_text_color), font=font)
@@ -2253,10 +2254,10 @@ class TimelapseRenderJob(threading.Thread):
         if overlay_text_valign == 'top':
             pass
         elif overlay_text_valign == 'middle':
-            textsize = d.multiline_textsize(text, font=font, spacing=0)
+            _, _, *textsize = d.multiline_textbbox((0, 0), text, font=font, spacing=0)
             y += image.size[1] / 2 - textsize[1] / 2
         elif overlay_text_valign == 'bottom':
-            textsize = d.multiline_textsize(text, font=font, spacing=0)
+            _, _, *textsize = d.multiline_textbbox((0, 0), text, font=font, spacing=0)
             y += image.size[1] - textsize[1]
         else:
             raise RenderError('overlay-text-valign',
@@ -2265,10 +2266,10 @@ class TimelapseRenderJob(threading.Thread):
         if overlay_text_halign == 'left':
             pass
         elif overlay_text_halign == 'center':
-            textsize = d.multiline_textsize(text, font=font, spacing=0)
+            _, _, *textsize = d.multiline_textbbox((0, 0), text, font=font, spacing=0)
             x += image.size[0] / 2 - textsize[0] / 2
         elif overlay_text_halign == 'right':
-            textsize = d.multiline_textsize(text, font=font, spacing=0)
+            _, _, *textsize = d.multiline_textbbox((0, 0), text, font=font, spacing=0)
             x += image.size[0] - textsize[0]
         else:
             raise RenderError('overlay-text-halign',

@@ -21,12 +21,108 @@
 # following email address: FormerLurker@pm.me
 ##################################################################################
 
-from distutils import version
 import functools
+import re
+
+
+# The classes Version and LooseVersion below are copied from CPython's distutils.version
+# (Python Software Foundation License). distutils was removed in Python 3.12, and
+# NumberedVersion / the plugin need LooseVersion's exact comparison behavior.
+class Version:
+    """Abstract base class for version numbering classes.  Just provides
+    constructor (__init__) and reproducer (__repr__), because those
+    seem to be the same for all version numbering classes; and route
+    rich comparisons to _cmp.
+    """
+
+    def __init__(self, vstring=None):
+        if vstring:
+            self.parse(vstring)
+
+    def __repr__(self):
+        return "%s ('%s')" % (self.__class__.__name__, str(self))
+
+    def __eq__(self, other):
+        c = self._cmp(other)
+        if c is NotImplemented:
+            return c
+        return c == 0
+
+    def __lt__(self, other):
+        c = self._cmp(other)
+        if c is NotImplemented:
+            return c
+        return c < 0
+
+    def __le__(self, other):
+        c = self._cmp(other)
+        if c is NotImplemented:
+            return c
+        return c <= 0
+
+    def __gt__(self, other):
+        c = self._cmp(other)
+        if c is NotImplemented:
+            return c
+        return c > 0
+
+    def __ge__(self, other):
+        c = self._cmp(other)
+        if c is NotImplemented:
+            return c
+        return c >= 0
+
+
+class LooseVersion(Version):
+    """Version numbering for anarchists and software realists.
+    A version number consists of a series of numbers, separated by either
+    periods or strings of letters.  When comparing version numbers, the numeric
+    components will be compared numerically, and the alphabetic components
+    lexically.  There is no such thing as an invalid version number under this scheme.
+    """
+
+    component_re = re.compile(r'(\d+ | [a-z]+ | \.)', re.VERBOSE)
+
+    def __init__(self, vstring=None):
+        if vstring:
+            self.parse(vstring)
+
+    def parse(self, vstring):
+        # Only the string is stored for __str__, the parsed components are used for comparison
+        self.vstring = vstring
+        components = [x for x in self.component_re.split(vstring)
+                      if x and x != '.']
+        for i, obj in enumerate(components):
+            try:
+                components[i] = int(obj)
+            except ValueError:
+                pass
+
+        self.version = components
+
+    def __str__(self):
+        return self.vstring
+
+    def __repr__(self):
+        return "LooseVersion ('%s')" % str(self)
+
+    def _cmp(self, other):
+        if isinstance(other, str):
+            other = LooseVersion(other)
+        elif not isinstance(other, LooseVersion):
+            return NotImplemented
+
+        if self.version == other.version:
+            return 0
+        if self.version < other.version:
+            return -1
+        if self.version > other.version:
+            return 1
+
 
 
 @functools.total_ordering
-class NumberedVersion(version.LooseVersion):
+class NumberedVersion(LooseVersion):
     # This is the current plugin version, not including any versioneer info,
     # which could be earlier or later
     CurrentVersion = "0.4.5"
@@ -67,10 +163,10 @@ class NumberedVersion(version.LooseVersion):
                 self.commit_version_string = vstring[index+1:]
             # strip off the plus symbox from the vstring
             vstring = vstring[:index]
-        version.LooseVersion.__init__(self, vstring)
+        LooseVersion.__init__(self, vstring)
 
     def parse(self, vstring):
-        version.LooseVersion.parse(self, vstring)
+        LooseVersion.parse(self, vstring)
         # save the version without commit level info
         # set index = 0
         index = 0
@@ -137,7 +233,7 @@ class NumberedVersion(version.LooseVersion):
 
     def __repr__(self):
         return "{cls} ('{vstring}', {prerel_tags})" \
-            .format(cls=self.__class__.__name__, vstring=str(self), prerel_tags=list(self.prerel_tags.keys()))
+            .format(cls=self.__class__.__name__, vstring=str(self), prerel_tags=list(self.pre_release_tags))
 
     def __str__(self):
         return self.original_string
